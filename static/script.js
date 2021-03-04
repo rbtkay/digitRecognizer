@@ -10,6 +10,8 @@ function init(e) {
     sendBtn.addEventListener("click", send);
     const resetBtn = document.getElementById("reset-btn");
     resetBtn.addEventListener("click", reset);
+
+    fetch('/first').then((data) => data.json()).then((value) => console.log(value))
 }
 
 function createPaint(parent) {
@@ -103,14 +105,30 @@ function send(e) {
     const cx = canvas.getContext("2d");
     const matrix = [];
     for (let i = 0; i < CANVAS_WIDTH; i++) {
-        matrix[i] = [];
+        //matrix[i] = [];
         for (let j = 0; j < CANVAS_WIDTH; j++) {
-            const { data } = cx.getImageData(i, j, 1, 1);
-            matrix[i][j] = data[0];
+            const { data } = cx.getImageData(j, i, 1, 1);
+            matrix[(i * 28) + j] = data[0];
         }
     }
-    console.log(matrix);
-    // TODO fetch back end
+    console.log(matrix)
+    fetch("/recognize-digit", { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify(matrix)})
+        .then(data => data.json())
+        .then(value => document.getElementById('deduced-number').innerHTML = "Nombre deviné : <strong>"+value+"</strong>")
+ 
+    let arr = []
+
+    for(let i = 0; i<28; i++)
+    {
+        arr.push([])
+        for(let j = 0; j<28; j++)
+        {
+                arr[i].push((i * 28) + j)
+        }
+    }
+
+    console.log(arr)
+
 }
 
 function reset(e) {
