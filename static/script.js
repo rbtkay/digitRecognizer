@@ -137,6 +137,9 @@ function trackDrag(onMove, onEnd) {
 /** HTML INTERACTIONS */
 
 function reset(e) {
+	const sendBtn = document.getElementById('send-btn');
+	sendBtn.classList.remove('d-none');
+
 	const canvas = document.getElementById('canvas-painter');
 	const cx = canvas.getContext('2d');
 	cx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_WIDTH);
@@ -146,6 +149,7 @@ function reset(e) {
 }
 
 function send(e) {
+	e.target.classList.add('d-none');
 	const canvas = document.getElementById('canvas-painter');
 	const cx = canvas.getContext('2d');
 	const matrix = [];
@@ -162,12 +166,14 @@ function send(e) {
 
 function displayResult(result) {
 	const validateDigit = e => {
+		btnWrap.classList.add('d-none');
 		post('/register-digit', result, reset);
 	};
 
 	const fixDigit = e => {
 		e.preventDefault();
 		e.stopPropagation();
+		e.target.classList.add('d-none');
 		const formData = new FormData(e.target);
 		post(
 			'/register-digit',
@@ -189,6 +195,7 @@ function displayResult(result) {
 					children: {
 						tag: 'input',
 						type: 'number',
+						placeholder: 'chiffre',
 						min: '0',
 						max: '9',
 						step: '1',
@@ -204,7 +211,7 @@ function displayResult(result) {
 				},
 			],
 		});
-		btnWrap.appendChild(form);
+		resultDiv.appendChild(form);
 	};
 
 	const resultDiv = document.getElementById('result');

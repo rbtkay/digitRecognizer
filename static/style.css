@@ -22,3 +22,7 @@ canvas {
 .text-violet {
     color: var(--purple) !important;
 }
+
+input {
+    min-width: 100px;
+}

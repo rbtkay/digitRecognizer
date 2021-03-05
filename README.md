@@ -13,38 +13,42 @@ L'objectif du projet est reconnaitre des chiffres dessinés par un utilisateur. 
 
 ## venv
 
-Créer le venv : <br/>
+### Créer le venv : <br/>
     
     python3 -m venv venv
 
 ### Lancer le venv
 
-Widows : 
+#### Widows : 
 
     venv\Scripts\activate
 
-Unix : 
+#### Unix : 
 
     venv/bin/activate
 
-Installer les packages requis : <br/>
+### Installer les packages requis : <br/>
 
     pip install -r requirements.txt
 
-Mettre à jour la liste des package : <br/>
-
+### Mettre à jour la liste des package : <br/>
 
     pip freeze > requirements.txt
 
 
-## notebook
+## Lancer les notebooks
 
     jupyter notebook
 
+- Le script de modélisation permet de définir le modèle d'entrainement en limitant au mieux le taux d'erreur.
+- Le script de test sert lui à appliquer le modèle sur un autre jeu de données contenant uniquement les pixels et non les labels associés.
 
-## flask
+## Entrainer l'IA depuis un script Python
 
-Lancer l'API python: <br/>
+    python ./training.py
+
+
+## Lancer l'API python via flask
 
     flask run
 
