@@ -1,3 +1,8 @@
+html,
+body {
+    font-size: 24px;
+}
+
 canvas {
     cursor: crosshair;
     border-radius: 2px;

@@ -25,18 +25,15 @@ def home():
 def recognize():
     # parse du JSON envoyé via fetch
     matrix = request.get_json(force=True)['matrix']
-    
+    # scale image to 28x28px
     im = Image.new('RGB', (116, 116))
     array = [(px,px,px) for px in matrix]
-       
     im.putdata(array)
-
     im.thumbnail((28,28))
-    im.save('resized.png')
+    # update matrix after scale
     matrix = list(im.getdata())
-    
     result = [rgb[0] for rgb in matrix]
-
+    
     prediction_digit = model.predict([result])    
 
     return jsonify({
