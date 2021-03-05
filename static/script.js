@@ -166,14 +166,14 @@ function send(e) {
 
 function displayResult(result) {
 	const validateDigit = e => {
-		e.target.classList.add('d-none');
+		btnWrap.classList.add('d-none');
 		post('/register-digit', result, reset);
 	};
 
 	const fixDigit = e => {
 		e.preventDefault();
 		e.stopPropagation();
-		e.target.lastChild.classList.add('d-none');
+		e.target.classList.add('d-none');
 		const formData = new FormData(e.target);
 		post(
 			'/register-digit',
@@ -211,7 +211,7 @@ function displayResult(result) {
 				},
 			],
 		});
-		btnWrap.appendChild(form);
+		resultDiv.appendChild(form);
 	};
 
 	const resultDiv = document.getElementById('result');
