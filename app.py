@@ -1,7 +1,9 @@
 from flask import Flask, request, render_template, jsonify
 import pickle
 import pandas as pd
+import numpy as np
 import os
+from PIL import Image
 import csv
 
 GET = 'GET'
@@ -23,11 +25,23 @@ def home():
 def recognize():
     # parse du JSON envoyé via fetch
     matrix = request.get_json(force=True)['matrix']
-    prediction_digit = model.predict([matrix])    
+    
+    im = Image.new('RGB', (116, 116))
+    array = [(px,px,px) for px in matrix]
+       
+    im.putdata(array)
+
+    im.thumbnail((28,28))
+    im.save('resized.png')
+    matrix = list(im.getdata())
+    
+    result = [rgb[0] for rgb in matrix]
+
+    prediction_digit = model.predict([result])    
 
     return jsonify({
         'digit': int(prediction_digit[0]), 
-        'matrix': matrix
+        'matrix': result
     })
     
 @app.route('/register-digit', methods=[POST])

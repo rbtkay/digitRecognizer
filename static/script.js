@@ -1,4 +1,4 @@
-const CANVAS_WIDTH = 28;
+const CANVAS_WIDTH = 116;
 document.addEventListener('DOMContentLoaded', init);
 
 // initialize the app
@@ -83,7 +83,7 @@ function createCanvas() {
 	const cx = canvas.getContext('2d');
 	cx.fillStyle = 'black';
 	cx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_WIDTH);
-	cx.lineWidth = 1;
+	cx.lineWidth = 4;
 	cx.strokeStyle = 'white';
 
 	cx.canvas.addEventListener('mousedown', e => {
@@ -153,7 +153,7 @@ function send(e) {
 		//matrix[i] = [];
 		for (let j = 0; j < CANVAS_WIDTH; j++) {
 			const { data } = cx.getImageData(j, i, 1, 1);
-			matrix[i * 28 + j] = data[0];
+			matrix[i * CANVAS_WIDTH + j] = data[0];
 		}
 	}
 
