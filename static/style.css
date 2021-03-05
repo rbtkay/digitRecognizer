@@ -1,3 +1,28 @@
 canvas{
     cursor: crosshair;
+    border-radius: 2px;
+}
+
+.text-info {
+    color: var(--cyan) !important;
+}
+
+.text-orange {
+    color: var(--orange) !important;
+}
+
+.text-purple {
+    color: #a333c8 !important;
+}
+
+.text-pink {
+    color: var(--pink) !important;
+}
+
+.text-violet {
+    color: var(--purple) !important;
+}
+
+input {
+    min-width: 100px;
 }
