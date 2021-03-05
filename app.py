@@ -19,29 +19,28 @@ def home():
     return render_template("index.html")
 
 
-@app.route('/recognize-digit',methods=[POST])
-def results():
+@app.route('/recognize-digit', methods=[POST])
+def recognize():
     # parse du JSON envoyé via fetch
-    data = request.get_json(force=True)
-    df = pd.DataFrame([data])
-    df.to_csv('result.csv',index=False)
-    prediction_digit = model.predict([data])
+    matrix = request.get_json(force=True)['matrix']
+    prediction_digit = model.predict([matrix])    
+
+    return jsonify({
+        'digit': int(prediction_digit[0]), 
+        'matrix': matrix
+    })
     
+@app.route('/register-digit', methods=[POST])
+def register():
+    # parse du JSON envoyé via fetch
+    digit, matrix = request.get_json(force=True).values() 
+    matrix.insert(0, digit)
     
+    with open('data-csv/train.csv','a') as file:
+        file.write((','.join([str(i) for i in matrix]) + '\n'))
+        
+    return jsonify('success')
 
-    return jsonify(int(prediction_digit[0]))
-
-@app.route('/first', methods=[GET])
-def test_first_line():
-    df = pd.read_csv('./digit-recognizer/train.csv')
-    l = list(df.iloc[4])
-
-    arr = []
-
-    for i in range(0,27):
-        arr.append([])
-        for j in range(0,27):
-            arr[i].append(l.pop(0))
-
-
-    return jsonify(arr)
+# run debug
+if __name__ == "__main__":
+    app.run(debug=True)

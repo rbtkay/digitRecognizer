@@ -1,138 +1,239 @@
 const CANVAS_WIDTH = 28;
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener('DOMContentLoaded', init);
 
 // initialize the app
 function init(e) {
-    const appDiv = document.getElementById("paint-app");
-    createPaint(appDiv);
+	const appDiv = document.getElementById('paint-app');
+	appDiv.appendChild(createCanvas());
 
-    const sendBtn = document.getElementById("send-btn");
-    sendBtn.addEventListener("click", send);
-    const resetBtn = document.getElementById("reset-btn");
-    resetBtn.addEventListener("click", reset);
-
-    fetch('/first').then((data) => data.json()).then((value) => console.log(value))
+	const sendBtn = document.getElementById('send-btn');
+	sendBtn.addEventListener('click', send);
+	const resetBtn = document.getElementById('reset-btn');
+	resetBtn.addEventListener('click', reset);
 }
 
-function createPaint(parent) {
-    const canvas = elt("canvas", { width: CANVAS_WIDTH, height: CANVAS_WIDTH, id: "canvas-painter" });
-    const cx = canvas.getContext("2d");
-    cx.fillStyle = "black";
-    cx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_WIDTH);
-    cx.lineWidth = 1;
-    cx.strokeStyle = "white";
-
-    cx.canvas.addEventListener("mousedown", (event) => {
-        // is the left mouse button being pressed?
-        if (event.which == 1) {
-            drawLine(event, cx);
-            // don't select when user is clicking and dragging
-            event.preventDefault();
-        }
-    });
-
-    parent.appendChild(canvas);
-}
+/** UTILS */
 
 /**
- * creates an element with a name and object (attributes)
- * appends all further arguments it gets as child nodes
- * string arguments create text nodes
- * ex: elt('div', {class: 'foo'}, 'Hello, world!');
+ * @param {object} as component {
+ * 	@param {string} tag
+ * 	@param {array|node|component|string|number} children
+ * 	@param {object} events
+ * 	@param {object} attributes
+ * }
  */
-function elt(name, attributes, child) {
-    const node = document.createElement(name);
-    if (attributes) {
-        for (let attr in attributes) if (attributes.hasOwnProperty(attr)) node.setAttribute(attr, attributes[attr]);
-    }
+function component({ tag, children, events, ...attributes }) {
+	const node = document.createElement(tag);
+	for (let attr in attributes) {
+		if (attributes.hasOwnProperty(attr)) {
+			node.setAttribute(attr, attributes[attr]);
+		}
+	}
 
-    if (child) {
-        // if this argument is a string, create a text node
-        if (typeof child == "string") child = document.createTextNode(child);
-        node.appendChild(child);
-    }
+	if (events) {
+		for (let event in events) {
+			if (events.hasOwnProperty(event)) {
+				node.addEventListener(event, events[event]);
+			}
+		}
+	}
 
-    return node;
+	function addChild(child) {
+		if (typeof child === 'number') {
+			child = child.toString();
+		}
+		if (typeof child === 'string') {
+			child = document.createTextNode(child);
+		} else if (typeof child === 'object' && !(child instanceof Node)) {
+			child = component(child);
+		}
+		node.appendChild(child);
+	}
+
+	if (children) {
+		if (Array.isArray(children)) {
+			children.forEach(child => addChild(child));
+		} else {
+			addChild(children);
+		}
+	}
+
+	return node;
 }
 
-function drawLine(event, cx, onEnd) {
-    cx.lineCap = "round";
+function post(url, body, callback) {
+	fetch(url, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(body),
+	})
+		.then(res => res.json())
+		.then(callback)
+		.catch(e => console.log(e));
+}
 
-    // mouse position relative to the canvas
-    let pos = relativePos(event, cx.canvas);
-    trackDrag((event) => {
-        cx.beginPath();
+/** CANVAS */
+function createCanvas() {
+	const canvas = component({
+		tag: 'canvas',
+		width: CANVAS_WIDTH,
+		height: CANVAS_WIDTH,
+		id: 'canvas-painter',
+	});
+	const cx = canvas.getContext('2d');
+	cx.fillStyle = 'black';
+	cx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_WIDTH);
+	cx.lineWidth = 1;
+	cx.strokeStyle = 'white';
 
-        // move to current mouse position
-        cx.moveTo(pos.x, pos.y);
+	cx.canvas.addEventListener('mousedown', e => {
+		// is the left mouse button being pressed?
+		if (e.which == 1) {
+			drawLine(e, cx);
+			// don't select when user is clicking and dragging
+			e.preventDefault();
+		}
+	});
+	return canvas;
+}
 
-        // update mouse position
-        pos = relativePos(event, cx.canvas);
-
-        // line to updated mouse position
-        cx.lineTo(pos.x, pos.y);
-
-        // stroke the line
-        cx.stroke();
-    }, onEnd);
+function drawLine(e, cx, onEnd) {
+	cx.lineCap = 'round';
+	// mouse position relative to the canvas
+	let pos = relativePos(e, cx.canvas);
+	trackDrag(e => {
+		cx.beginPath();
+		// move to current mouse position
+		cx.moveTo(pos.x, pos.y);
+		// update mouse position
+		pos = relativePos(e, cx.canvas);
+		// line to updated mouse position
+		cx.lineTo(pos.x, pos.y);
+		// stroke the line
+		cx.stroke();
+	}, onEnd);
 }
 
 // figures out canvas relative coordinates for accurate functionality
-function relativePos(event, element) {
-    const rect = element.getBoundingClientRect();
-    return {
-        x: Math.floor(event.clientX - rect.left),
-        y: Math.floor(event.clientY - rect.top),
-    };
+function relativePos(e, el) {
+	const { left, top } = el.getBoundingClientRect();
+	return {
+		x: Math.floor(e.clientX - left),
+		y: Math.floor(e.clientY - top),
+	};
 }
 
 // registers and unregisters listeners for tools
 function trackDrag(onMove, onEnd) {
-    function end(event) {
-        removeEventListener("mousemove", onMove);
-        removeEventListener("mouseup", end);
-        if (onEnd) onEnd(event);
-    }
-    addEventListener("mousemove", onMove);
-    addEventListener("mouseup", end);
+	function end(e) {
+		removeEventListener('mousemove', onMove);
+		removeEventListener('mouseup', end);
+		if (onEnd) onEnd(e);
+	}
+	addEventListener('mousemove', onMove);
+	addEventListener('mouseup', end);
 }
 
-/**
- * Btns
- */
-function send(e) {
-    const canvas = document.getElementById("canvas-painter");
-    const cx = canvas.getContext("2d");
-    const matrix = [];
-    for (let i = 0; i < CANVAS_WIDTH; i++) {
-        //matrix[i] = [];
-        for (let j = 0; j < CANVAS_WIDTH; j++) {
-            const { data } = cx.getImageData(j, i, 1, 1);
-            matrix[(i * 28) + j] = data[0];
-        }
-    }
-    console.log(matrix)
-    fetch("/recognize-digit", { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify(matrix)})
-        .then(data => data.json())
-        .then(value => document.getElementById('deduced-number').innerHTML = "Nombre deviné : <strong>"+value+"</strong>")
- 
-    let arr = []
-
-    for(let i = 0; i<28; i++)
-    {
-        arr.push([])
-        for(let j = 0; j<28; j++)
-        {
-                arr[i].push((i * 28) + j)
-        }
-    }
-
-    console.log(arr)
-
-}
+/** HTML INTERACTIONS */
 
 function reset(e) {
-    const canvas = document.getElementById("canvas-painter");
-    const cx = canvas.getContext("2d");
-    cx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_WIDTH);
+	const canvas = document.getElementById('canvas-painter');
+	const cx = canvas.getContext('2d');
+	cx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_WIDTH);
+
+	const resultDiv = document.getElementById('result');
+	resultDiv.innerHTML = '';
+}
+
+function send(e) {
+	const canvas = document.getElementById('canvas-painter');
+	const cx = canvas.getContext('2d');
+	const matrix = [];
+	for (let i = 0; i < CANVAS_WIDTH; i++) {
+		//matrix[i] = [];
+		for (let j = 0; j < CANVAS_WIDTH; j++) {
+			const { data } = cx.getImageData(j, i, 1, 1);
+			matrix[i * 28 + j] = data[0];
+		}
+	}
+
+	post('/recognize-digit', { matrix }, displayResult);
+}
+
+function displayResult(result) {
+	const validateDigit = e => {
+		post('/register-digit', result, reset);
+	};
+
+	const fixDigit = e => {
+		e.preventDefault();
+		e.stopPropagation();
+		const formData = new FormData(e.target);
+		post(
+			'/register-digit',
+			{ digit: formData.get('digit'), matrix: result.matrix },
+			reset
+		);
+	};
+
+	const rejectDigit = e => {
+		btnWrap.innerHTML = '';
+		const form = component({
+			tag: 'form',
+			class: 'form-inline',
+			events: { submit: fixDigit },
+			children: [
+				{
+					tag: 'div',
+					class: 'form-group mr-2 mb-0',
+					children: {
+						tag: 'input',
+						type: 'number',
+						min: '0',
+						max: '9',
+						step: '1',
+						class: 'form-control',
+						name: 'digit',
+					},
+				},
+				{
+					tag: 'button',
+					type: 'submit',
+					class: 'btn btn-success',
+					children: 'Valider',
+				},
+			],
+		});
+		btnWrap.appendChild(form);
+	};
+
+	const resultDiv = document.getElementById('result');
+	resultDiv.appendChild(
+		component({
+			tag: 'p',
+			children: ['Chiffre deviné : ', { tag: 'strong', children: result.digit }],
+		})
+	);
+	resultDiv.appendChild(
+		component({ tag: 'p', children: 'Le chiffre deviné est-t-il juste ?' })
+	);
+	const btnWrap = component({
+		tag: 'div',
+		class: 'mb-3',
+		children: [
+			{
+				tag: 'button',
+				class: 'btn btn-success mr-2',
+				events: { click: validateDigit },
+				children: 'Oui',
+			},
+			{
+				tag: 'button',
+				class: 'btn btn-danger',
+				events: { click: rejectDigit },
+				children: 'Non',
+			},
+		],
+	});
+	resultDiv.appendChild(btnWrap);
 }
