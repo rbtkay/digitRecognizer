@@ -19,7 +19,7 @@ L'objectif du projet est reconnaitre des chiffres dessinés par un utilisateur. 
 
 ### Lancer le venv
 
-#### Widows : 
+#### Windows : 
 
     venv\Scripts\activate
 
