@@ -46,6 +46,5 @@ Mettre à jour la liste des package : <br/>
 
 Lancer l'API python: <br/>
 
-    cd <NOM_DU_DOSSIER>
     flask run
 

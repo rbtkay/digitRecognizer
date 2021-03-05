@@ -2,3 +2,4 @@ matplotlib
 notebook
 pandas
 scikit-learn
+flask
